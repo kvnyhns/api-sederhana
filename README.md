@@ -45,17 +45,14 @@ Jalankan dari root project:
 
 ```bash
 composer install
+cp .env.example .env
 docker compose up -d
+docker compose exec laravel.test php artisan key:generate
+docker compose exec laravel.test php artisan jwt:secret
 docker compose exec laravel.test php artisan migrate
 ```
 
-Jika file `.env` belum tersedia, salin dari `.env.example`, lalu generate application key:
-
-```bash
-cp .env.example .env
-docker compose exec laravel.test php artisan key:generate
-docker compose exec laravel.test php artisan jwt:secret
-```
+File `.env` disiapkan sebelum container dijalankan. Setelah package terpasang dan container aktif, generate application key dan JWT secret di environment lokal. Jangan commit file `.env`, application key, atau JWT secret.
 
 Aplikasi dapat diakses melalui:
 
@@ -80,12 +77,12 @@ Workflow Blade meliputi:
 - Melihat daftar User dan Hobby.
 - Membuat User dengan password dan banyak Hobby.
 - Menambahkan input Hobby secara dinamis melalui tombol `Add hobby`.
-- Mengubah data User dan mengganti daftar Hobby.
+- Mengubah data User dan mengganti daftar Hobby. Password yang kosong atau tidak dikirim akan mempertahankan password lama.
 - Menghapus User beserta seluruh Hobby terkait.
 - Menampilkan pesan sukses dan validasi error.
 - Konfirmasi sebelum menghapus User.
 
-Untuk update Hobby, daftar yang dikirim dianggap sebagai daftar akhir. Hobby yang tidak dikirim akan dihapus. Jika daftar Hobby tidak dikirim pada update parsial, daftar lama tetap dipertahankan.
+Untuk update Hobby, daftar yang dikirim dianggap sebagai daftar akhir. Hobby yang tidak dikirim akan dihapus. Jika daftar Hobby tidak dikirim pada update parsial, daftar lama tetap dipertahankan. Jika array kosong dikirim secara eksplisit (`"hobbies": []`), semua Hobby User tersebut akan dihapus.
 
 ## Endpoint API
 
@@ -158,6 +155,7 @@ Setelah logout, token tersebut tidak dapat digunakan lagi untuk mengakses endpoi
 - `name` wajib diisi dan maksimal 255 karakter.
 - `email` wajib valid dan unik.
 - Password wajib dikonfirmasi dan minimal 8 karakter saat dibuat atau diubah.
+- Password kosong atau tidak dikirim saat update tidak mengubah password yang sudah tersimpan.
 - Nama Hobby dinormalisasi dengan menghapus spasi di awal/akhir dan merapikan spasi berulang.
 - Nama Hobby maksimal 100 karakter dan tidak boleh duplikat pada User yang sama.
 - Password tidak pernah dikembalikan pada response API.
